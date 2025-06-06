@@ -76,14 +76,15 @@ export default function AuthProvider({ children }: AuthProviderProps) {
   // Add logout functionality to authenticated content
   return (
     <div>
-      {/* Logout button in top right */}
-      <div className="fixed top-4 right-4 z-50">
+      {/* Mobile-friendly logout button */}
+      <div className="fixed top-2 left-2 z-50 md:top-4 md:right-4">
         <button
           onClick={handleLogout}
-          className="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded-full shadow-lg transition-colors"
+          className="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 md:px-3 md:py-1 rounded-full shadow-lg transition-colors flex items-center"
           title="Store verlassen"
         >
-          🚪 Logout
+          <span className="md:hidden">🚪</span>
+          <span className="hidden md:inline">🚪 Logout</span>
         </button>
       </div>
       {children}

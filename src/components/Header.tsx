@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ShoppingCartIcon } from '@heroicons/react/24/outline'
 import { useCart } from '@/contexts/CartContext'
@@ -9,6 +9,20 @@ import CartSidebar from './CartSidebar'
 export default function Header() {
   const { state } = useCart()
   const [isCartOpen, setIsCartOpen] = useState(false)
+
+  // Auto-open cart sidebar on cart updates
+  useEffect(() => {
+    const handleCartUpdate = () => {
+      setIsCartOpen(true)
+    }
+
+    // Listen for custom cart update events
+    window.addEventListener('cart-updated', handleCartUpdate)
+    
+    return () => {
+      window.removeEventListener('cart-updated', handleCartUpdate)
+    }
+  }, [])
 
   return (
     <>
@@ -42,46 +56,56 @@ export default function Header() {
               </Link>
             </nav>
 
-            {/* Cart Controls */}
-            <div className="flex items-center space-x-4">
-              {/* Quick Cart Button (Opens Sidebar) */}
+            {/* Cart Controls - Mobile Optimized */}
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              {/* Mobile Quick Cart Button */}
               <button
                 onClick={() => setIsCartOpen(true)}
                 className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors group"
+                title="Warenkorb öffnen"
               >
-                <ShoppingCartIcon className="h-6 w-6" />
+                <ShoppingCartIcon className="h-6 w-6 sm:h-7 sm:w-7" />
                 
                 {/* Cart Badge */}
                 {state.totalItems > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
+                  <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-pulse shadow-lg">
                     {state.totalItems > 99 ? '99+' : state.totalItems}
                   </span>
                 )}
                 
-                {/* Hover Tooltip */}
-                <div className="absolute right-0 top-full mt-2 bg-gray-900 text-white text-sm py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                {/* Hover Tooltip - Desktop only */}
+                <div className="hidden sm:block absolute right-0 top-full mt-2 bg-gray-900 text-white text-sm py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
                   {state.totalItems === 0 ? 'Warenkorb ist leer' : 
                    state.totalItems === 1 ? '1 Artikel im Warenkorb' : 
                    `${state.totalItems} Artikel im Warenkorb`}
                 </div>
               </button>
 
-              {/* Cart Total (Desktop only) */}
+              {/* Cart Total - Desktop */}
               {state.totalItems > 0 && (
-                <div className="hidden sm:block">
-                  <Link
-                    href="/cart"
+                <div className="hidden md:block">
+                  <button
+                    onClick={() => setIsCartOpen(true)}
                     className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
                   >
                     €{(state.totalPrice / 100).toFixed(2)}
-                  </Link>
+                  </button>
                 </div>
               )}
 
-              {/* Full Cart Link (Mobile friendly) */}
+              {/* Full Cart Button - Large Screens */}
+              <button 
+                onClick={() => setIsCartOpen(true)}
+                className="hidden lg:inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+              >
+                Warenkorb
+              </button>
+
+              {/* Fallback Cart Link for SEO */}
               <Link 
                 href="/cart" 
-                className="hidden sm:inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                className="sr-only"
+                aria-label="Zur Warenkorb-Seite"
               >
                 Warenkorb
               </Link>

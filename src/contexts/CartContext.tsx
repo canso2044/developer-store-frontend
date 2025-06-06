@@ -159,6 +159,11 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   // Actions
   const addItem = (item: Omit<CartItem, 'id'>) => {
     dispatch({ type: 'ADD_ITEM', payload: item })
+    
+    // Trigger auto-open cart sidebar event
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('cart-updated'))
+    }
   }
 
   const removeItem = (id: string) => {
