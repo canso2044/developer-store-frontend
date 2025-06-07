@@ -6,7 +6,8 @@ import { ReactNode } from 'react'
 
 // Mock Next.js components
 jest.mock('next/image', () => {
-  return function MockImage({ src, alt, ...props }: any) {
+  return function MockImage({ src, alt, ...props }: { src: string; alt: string; [key: string]: unknown }) {
+    // eslint-disable-next-line @next/next/no-img-element
     return <img src={src} alt={alt} {...props} />
   }
 })

@@ -283,7 +283,7 @@ describe('Header Component', () => {
     })
 
     it('should handle cart state transitions correctly', async () => {
-      const { rerender } = render(
+      render(
         <TestWrapper>
           <Header />
         </TestWrapper>

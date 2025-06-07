@@ -19,9 +19,7 @@ export default function Header() {
     setIsCartOpen(false)
   }, [])
 
-  const toggleCart = useCallback(() => {
-    setIsCartOpen(prev => !prev)
-  }, [])
+
 
   // Auto-open cart sidebar on cart updates
   useEffect(() => {
