@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeftIcon, HeartIcon, ShareIcon, ShoppingCartIcon, CheckIcon } from '@heroicons/react/24/outline'
@@ -236,6 +236,55 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   const [isAdding, setIsAdding] = useState(false)
   const [justAdded, setJustAdded] = useState(false)
 
+  // Improved variant selection with useCallback - moved after state declarations
+  const handleVariantChange = useCallback((variant: ProductVariant) => {
+    setSelectedVariant(variant)
+    // Reset any temporary states when variant changes
+    setJustAdded(false)
+    setIsAdding(false)
+  }, [])
+
+  // Improved quantity handlers
+  const handleQuantityDecrease = useCallback(() => {
+    setQuantity(prev => Math.max(1, prev - 1))
+  }, [])
+
+  const handleQuantityIncrease = useCallback(() => {
+    setQuantity(prev => prev + 1)
+  }, [])
+
+  // Warenkorb-Funktionen
+  const handleAddToCart = useCallback(async () => {
+    if (!selectedVariant || !product || isAdding) return
+    
+    setIsAdding(true)
+    
+    try {
+      addItem({
+        productId: product.id,
+        title: product.title,
+        image: product.thumbnail || '',
+        price: selectedVariant.calculated_price.calculated_amount,
+        variant: {
+          id: selectedVariant.id,
+          size: selectedVariant.size,
+          color: selectedVariant.color,
+          title: selectedVariant.title
+        },
+        quantity
+      })
+      
+      // Success Feedback
+      setJustAdded(true)
+      setTimeout(() => setJustAdded(false), 2000)
+      
+    } catch (error) {
+      console.error('Error adding to cart:', error)
+    } finally {
+      setIsAdding(false)
+    }
+  }, [selectedVariant, product, isAdding, addItem, quantity])
+
   useEffect(() => {
     const resolveParams = async () => {
       const resolvedParams = await Promise.resolve(params)
@@ -265,38 +314,6 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
 
   const price = selectedVariant?.calculated_price.calculated_amount || 2500
   const formattedPrice = (price / 100).toFixed(2)
-  
-  // Warenkorb-Funktionen
-  const handleAddToCart = async () => {
-    if (!selectedVariant || !product) return
-    
-    setIsAdding(true)
-    
-    try {
-      addItem({
-        productId: product.id,
-        title: product.title,
-        image: product.thumbnail || '',
-        price: selectedVariant.calculated_price.calculated_amount,
-        variant: {
-          id: selectedVariant.id,
-          size: selectedVariant.size,
-          color: selectedVariant.color,
-          title: selectedVariant.title
-        },
-        quantity
-      })
-      
-      // Success Feedback
-      setJustAdded(true)
-      setTimeout(() => setJustAdded(false), 2000)
-      
-    } catch (error) {
-      console.error('Error adding to cart:', error)
-    } finally {
-      setIsAdding(false)
-    }
-  }
   
   // Aktuelle Menge im Warenkorb
   const currentCartQuantity = selectedVariant ? 
@@ -330,6 +347,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                 width={600}
                 height={600}
                 className="w-full h-full object-cover"
+                priority
               />
             </div>
             
@@ -340,9 +358,11 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`w-20 h-20 rounded-lg overflow-hidden border-2 ${
-                      selectedImage === index ? 'border-blue-500' : 'border-gray-200'
+                    className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${
+                      selectedImage === index ? 'border-blue-500' : 'border-gray-200 hover:border-gray-300'
                     }`}
+                    type="button"
+                    aria-label={`Produktbild ${index + 1} anzeigen`}
                   >
                     <Image
                       src={image}
@@ -382,12 +402,15 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                 {product.variants.map((variant) => (
                   <button
                     key={variant.id}
-                    onClick={() => setSelectedVariant(variant)}
-                    className={`p-3 border-2 rounded-lg text-sm font-medium transition-colors ${
+                    onClick={() => handleVariantChange(variant)}
+                    className={`p-3 border-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                       selectedVariant?.id === variant.id
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                    }`}
+                        ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
+                        : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:shadow-sm'
+                    } ${variant.stock === 0 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                    disabled={variant.stock === 0}
+                    type="button"
+                    aria-label={`${variant.size} ${variant.color} auswählen`}
                   >
                     <div>{variant.size} / {variant.color}</div>
                     <div className="text-xs text-gray-500">
@@ -404,7 +427,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
               <ul className="grid grid-cols-2 gap-2">
                 {product.features?.map((feature, index) => (
                   <li key={index} className="flex items-center text-sm text-gray-600">
-                    <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                    <span className="w-2 h-2 bg-green-500 rounded-full mr-2 flex-shrink-0"></span>
                     {feature}
                   </li>
                 ))}
@@ -415,33 +438,39 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
             <div className="space-y-4">
               <div className="flex items-center space-x-4">
                 <label className="font-semibold text-gray-900">Anzahl:</label>
-                <div className="flex items-center border border-gray-300 rounded-lg">
+                <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
                   <button 
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="px-3 py-2 text-gray-600 hover:text-gray-900"
+                    onClick={handleQuantityDecrease}
+                    className="px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors"
+                    type="button"
+                    aria-label="Anzahl verringern"
                   >
                     -
                   </button>
-                  <span className="px-4 py-2 min-w-[3rem] text-center">{quantity}</span>
+                  <span className="px-4 py-2 min-w-[3rem] text-center bg-gray-50">{quantity}</span>
                   <button 
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="px-3 py-2 text-gray-600 hover:text-gray-900"
+                    onClick={handleQuantityIncrease}
+                    className="px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors"
+                    type="button"
+                    aria-label="Anzahl erhöhen"
                   >
                     +
                   </button>
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex space-x-4">
+              {/* Action Buttons - Improved Layout & Click Areas */}
+              <div className="flex space-x-3 relative z-10">
                 <button 
                   onClick={handleAddToCart}
                   disabled={!selectedVariant || selectedVariant.stock === 0 || isAdding}
-                  className={`flex-1 py-3 px-6 rounded-lg font-semibold flex items-center justify-center space-x-2 transition-all ${
+                  className={`flex-1 min-h-[48px] py-3 px-6 rounded-lg font-semibold flex items-center justify-center space-x-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
                     justAdded 
-                      ? 'bg-green-600 text-white' 
-                      : 'bg-blue-600 text-white hover:bg-blue-700'
-                  } disabled:bg-gray-300 disabled:cursor-not-allowed`}
+                      ? 'bg-green-600 text-white hover:bg-green-700' 
+                      : 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800'
+                  } disabled:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50 relative`}
+                  type="button"
+                  aria-label={`${quantity} ${quantity === 1 ? 'Stück' : 'Stück'} in den Warenkorb legen`}
                 >
                   {isAdding ? (
                     <>
@@ -463,7 +492,9 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                 
                 <button 
                   onClick={() => setIsFavorite(!isFavorite)}
-                  className="p-3 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="min-h-[48px] min-w-[48px] p-3 border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
+                  type="button"
+                  aria-label={isFavorite ? 'Von Favoriten entfernen' : 'Zu Favoriten hinzufügen'}
                 >
                   {isFavorite ? (
                     <HeartSolidIcon className="h-6 w-6 text-red-500" />
@@ -472,7 +503,11 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                   )}
                 </button>
                 
-                <button className="p-3 border border-gray-300 rounded-lg hover:bg-gray-50">
+                <button 
+                  className="min-h-[48px] min-w-[48px] p-3 border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
+                  type="button"
+                  aria-label="Produkt teilen"
+                >
                   <ShareIcon className="h-6 w-6 text-gray-400" />
                 </button>
               </div>

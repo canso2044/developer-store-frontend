@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { ShoppingCartIcon } from '@heroicons/react/24/outline'
 import { useCart } from '@/contexts/CartContext'
@@ -10,10 +10,23 @@ export default function Header() {
   const { state } = useCart()
   const [isCartOpen, setIsCartOpen] = useState(false)
 
+  // Improved cart state management with useCallback to prevent stale closures
+  const openCart = useCallback(() => {
+    setIsCartOpen(true)
+  }, [])
+
+  const closeCart = useCallback(() => {
+    setIsCartOpen(false)
+  }, [])
+
+  const toggleCart = useCallback(() => {
+    setIsCartOpen(prev => !prev)
+  }, [])
+
   // Auto-open cart sidebar on cart updates
   useEffect(() => {
     const handleCartUpdate = () => {
-      setIsCartOpen(true)
+      openCart()
     }
 
     // Listen for custom cart update events
@@ -22,7 +35,14 @@ export default function Header() {
     return () => {
       window.removeEventListener('cart-updated', handleCartUpdate)
     }
-  }, [])
+  }, [openCart])
+
+  // Debug logging for cart state changes (only in development)
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Cart sidebar state changed:', isCartOpen)
+    }
+  }, [isCartOpen])
 
   return (
     <>
@@ -60,9 +80,11 @@ export default function Header() {
             <div className="flex items-center space-x-2 sm:space-x-4">
               {/* Mobile Quick Cart Button */}
               <button
-                onClick={() => setIsCartOpen(true)}
-                className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors group"
-                title="Warenkorb öffnen"
+                onClick={openCart}
+                className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors group cursor-pointer"
+                title="Warenkorb öffnen (Icon)"
+                type="button"
+                aria-label="Warenkorb öffnen"
               >
                 <ShoppingCartIcon className="h-6 w-6 sm:h-7 sm:w-7" />
                 
@@ -85,18 +107,23 @@ export default function Header() {
               {state.totalItems > 0 && (
                 <div className="hidden md:block">
                   <button
-                    onClick={() => setIsCartOpen(true)}
-                    className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                    onClick={openCart}
+                    className="text-sm text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
+                    type="button"
+                    aria-label="Warenkorb Gesamtsumme anzeigen"
                   >
                     €{(state.totalPrice / 100).toFixed(2)}
                   </button>
                 </div>
               )}
 
-              {/* Full Cart Button - Large Screens */}
+              {/* Full Cart Button - Medium+ Screens with Better Click Area */}
               <button 
-                onClick={() => setIsCartOpen(true)}
-                className="hidden lg:inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                onClick={openCart}
+                className="hidden md:inline-flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors cursor-pointer min-h-[44px] min-w-[88px]"
+                title="Warenkorb öffnen (Desktop)"
+                type="button"
+                aria-label="Warenkorb öffnen (Desktop)"
               >
                 Warenkorb
               </button>
@@ -114,8 +141,11 @@ export default function Header() {
         </div>
       </header>
 
-      {/* Cart Sidebar */}
-      <CartSidebar isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      {/* Cart Sidebar with improved state management */}
+      <CartSidebar 
+        isOpen={isCartOpen} 
+        onClose={closeCart}
+      />
     </>
   )
 } 

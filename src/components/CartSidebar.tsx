@@ -1,6 +1,6 @@
 'use client'
 
-import { Fragment } from 'react'
+import { Fragment, useCallback, useEffect } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { XMarkIcon, TrashIcon, PlusIcon, MinusIcon } from '@heroicons/react/24/outline'
 import { ShoppingCartIcon } from '@heroicons/react/24/solid'
@@ -16,21 +16,41 @@ interface CartSidebarProps {
 export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
   const { state, removeItem, updateQuantity, clearCart } = useCart()
 
-  const handleQuantityChange = (id: string, newQuantity: number) => {
+  // Improved close handler with useCallback to prevent stale closures
+  const handleClose = useCallback(() => {
+    onClose()
+  }, [onClose])
+
+  const handleQuantityChange = useCallback((id: string, newQuantity: number) => {
     if (newQuantity <= 0) {
       removeItem(id)
     } else {
       updateQuantity(id, newQuantity)
     }
-  }
+  }, [removeItem, updateQuantity])
 
-  const formatPrice = (price: number) => {
+  const handleClearCart = useCallback(() => {
+    clearCart()
+  }, [clearCart])
+
+  const handleRemoveItem = useCallback((id: string) => {
+    removeItem(id)
+  }, [removeItem])
+
+  const formatPrice = useCallback((price: number) => {
     return (price / 100).toFixed(2)
-  }
+  }, [])
+
+  // Debug logging for cart sidebar state changes (only in development)
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('CartSidebar isOpen changed:', isOpen)
+    }
+  }, [isOpen])
 
   return (
     <Transition.Root show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={onClose}>
+      <Dialog as="div" className="relative z-50" onClose={handleClose}>
         <Transition.Child
           as={Fragment}
           enter="ease-in-out duration-500"
@@ -66,8 +86,9 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                         <div className="ml-3 flex h-7 items-center">
                           <button
                             type="button"
-                            className="relative -m-2 p-2 text-gray-400 hover:text-gray-500"
-                            onClick={onClose}
+                            className="relative -m-2 p-2 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                            onClick={handleClose}
+                            aria-label="Warenkorb schließen"
                           >
                             <span className="absolute -inset-0.5" />
                             <span className="sr-only">Warenkorb schließen</span>
@@ -90,8 +111,8 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                             <div className="mt-6">
                               <Link
                                 href="/"
-                                onClick={onClose}
-                                className="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
+                                onClick={handleClose}
+                                className="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                               >
                                 Weiter einkaufen
                               </Link>
@@ -130,7 +151,9 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                                       <div className="flex items-center space-x-2">
                                         <button
                                           onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                                          className="h-8 w-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                                          className="h-8 w-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                          type="button"
+                                          aria-label={`Menge von ${item.title} verringern`}
                                         >
                                           <MinusIcon className="h-4 w-4" />
                                         </button>
@@ -139,7 +162,9 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                                         </span>
                                         <button
                                           onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                                          className="h-8 w-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                                          className="h-8 w-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                          type="button"
+                                          aria-label={`Menge von ${item.title} erhöhen`}
                                         >
                                           <PlusIcon className="h-4 w-4" />
                                         </button>
@@ -149,8 +174,9 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                                       <div className="flex">
                                         <button
                                           type="button"
-                                          onClick={() => removeItem(item.id)}
-                                          className="font-medium text-red-600 hover:text-red-500 flex items-center space-x-1"
+                                          onClick={() => handleRemoveItem(item.id)}
+                                          className="font-medium text-red-600 hover:text-red-500 flex items-center space-x-1 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded"
+                                          aria-label={`${item.title} aus Warenkorb entfernen`}
                                         >
                                           <TrashIcon className="h-4 w-4" />
                                           <span>Entfernen</span>
@@ -182,15 +208,16 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                         <div className="mt-6 space-y-3">
                           <Link
                             href="/cart"
-                            onClick={onClose}
-                            className="flex w-full items-center justify-center rounded-md border border-transparent bg-blue-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-blue-700 transition-colors"
+                            onClick={handleClose}
+                            className="flex w-full items-center justify-center rounded-md border border-transparent bg-blue-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                           >
                             Zum Warenkorb
                           </Link>
                           <button
                             type="button"
-                            onClick={clearCart}
-                            className="flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-3 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-colors"
+                            onClick={handleClearCart}
+                            className="flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-3 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                            aria-label="Alle Artikel aus Warenkorb entfernen"
                           >
                             Warenkorb leeren
                           </button>
@@ -202,10 +229,10 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                             oder{' '}
                             <button
                               type="button"
-                              className="font-medium text-blue-600 hover:text-blue-500"
-                              onClick={onClose}
+                              className="font-medium text-blue-600 hover:text-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+                              onClick={handleClose}
                             >
-                              Weiter einkaufen
+                              weiter einkaufen
                               <span aria-hidden="true"> &rarr;</span>
                             </button>
                           </p>
