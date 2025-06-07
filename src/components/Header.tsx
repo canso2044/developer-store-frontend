@@ -76,10 +76,17 @@ export default function Header() {
 
             {/* Cart Controls - Mobile Optimized */}
             <div className="flex items-center space-x-2 sm:space-x-4">
-              {/* Mobile Quick Cart Button - BULLETPROOF Click Area */}
+              {/* Mobile Quick Cart Button - DEBUG MODE */}
               <div
-                onClick={openCart}
-                className="relative p-3 text-gray-700 hover:text-blue-600 transition-colors group cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+                onClick={(e) => {
+                  console.log('🎯 Cart clicked!', e.target, e.currentTarget)
+                  console.log('Click coordinates:', e.clientX, e.clientY)
+                  openCart()
+                }}
+                onMouseDown={(e) => {
+                  console.log('🖱️ Mouse down on cart', e.target)
+                }}
+                className="relative p-3 text-gray-700 hover:text-blue-600 transition-colors group cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center bg-red-100 border-2 border-red-500"
                 title="Warenkorb öffnen (Icon)"
                 role="button"
                 tabIndex={0}
@@ -91,7 +98,14 @@ export default function Header() {
                   }
                 }}
               >
-                <ShoppingCartIcon className="h-6 w-6 sm:h-7 sm:w-7" />
+                <ShoppingCartIcon 
+                  className="h-6 w-6 sm:h-7 sm:w-7 bg-blue-200 border border-blue-400" 
+                  onClick={(e) => {
+                    console.log('🛒 SVG Icon clicked directly!', e)
+                    e.stopPropagation()
+                    openCart()
+                  }}
+                />
                 
                 {/* Cart Badge - Positioned relative to button center */}
                 {state.totalItems > 0 && (
@@ -121,6 +135,15 @@ export default function Header() {
                   </button>
                 </div>
               )}
+
+              {/* EMERGENCY: Simple Text Button */}
+              <button
+                onClick={openCart}
+                className="bg-green-500 text-white px-3 py-2 rounded text-sm"
+                type="button"
+              >
+                🛒 CART
+              </button>
 
               {/* Full Cart Button - Medium+ Screens with Better Click Area */}
               <button 
