@@ -76,20 +76,26 @@ export default function Header() {
 
             {/* Cart Controls - Mobile Optimized */}
             <div className="flex items-center space-x-2 sm:space-x-4">
-              {/* Mobile Quick Cart Button - Extended Click Area */}
-              <button
+              {/* Mobile Quick Cart Button - BULLETPROOF Click Area */}
+              <div
                 onClick={openCart}
                 className="relative p-3 text-gray-700 hover:text-blue-600 transition-colors group cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
                 title="Warenkorb öffnen (Icon)"
-                type="button"
+                role="button"
+                tabIndex={0}
                 aria-label="Warenkorb öffnen"
-                style={{ pointerEvents: 'auto' }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    openCart()
+                  }
+                }}
               >
-                <ShoppingCartIcon className="h-6 w-6 sm:h-7 sm:w-7 pointer-events-none" />
+                <ShoppingCartIcon className="h-6 w-6 sm:h-7 sm:w-7" />
                 
                 {/* Cart Badge - Positioned relative to button center */}
                 {state.totalItems > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 bg-blue-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-pulse shadow-lg pointer-events-none">
+                  <span className="absolute -top-0.5 -right-0.5 bg-blue-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-pulse shadow-lg pointer-events-none z-20">
                     {state.totalItems > 99 ? '99+' : state.totalItems}
                   </span>
                 )}
@@ -100,7 +106,7 @@ export default function Header() {
                    state.totalItems === 1 ? '1 Artikel im Warenkorb' : 
                    `${state.totalItems} Artikel im Warenkorb`}
                 </div>
-              </button>
+              </div>
 
               {/* Cart Total - Desktop */}
               {state.totalItems > 0 && (

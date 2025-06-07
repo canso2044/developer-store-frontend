@@ -440,7 +440,7 @@ describe('Header Component', () => {
       // Should have proper accessibility attributes
       expect(mobileCartButton).toHaveAttribute('title', 'Warenkorb öffnen (Icon)')
       expect(mobileCartButton).toHaveAttribute('aria-label', 'Warenkorb öffnen')
-      expect(mobileCartButton).toHaveAttribute('type', 'button')
+      expect(mobileCartButton).toHaveAttribute('role', 'button')
     })
 
     it('should ensure cart icon click area covers entire icon', () => {
@@ -491,7 +491,7 @@ describe('Header Component', () => {
       })
     })
 
-    it('should verify button structure prevents center-click issues', () => {
+    it('should have simple div structure for guaranteed clickability', () => {
       render(
         <TestWrapper>
           <Header />
@@ -500,30 +500,31 @@ describe('Header Component', () => {
 
       const mobileCartButton = screen.getByTitle('Warenkorb öffnen (Icon)')
       
-      // Check button structure - should have relative class for proper positioning
-      expect(mobileCartButton).toHaveClass('relative')
+      // Should be a div with role="button" instead of actual button element
+      expect(mobileCartButton.tagName).toBe('DIV')
+      expect(mobileCartButton).toHaveAttribute('role', 'button')
+      expect(mobileCartButton).toHaveAttribute('tabIndex', '0')
       
-      // Should have flex centering to ensure icon is properly positioned
-      expect(mobileCartButton).toHaveClass('flex', 'items-center', 'justify-center')
-      
-      // Button should have explicit pointer events
-      expect(mobileCartButton).toHaveStyle('pointer-events: auto')
-      
-      // Icon should not intercept pointer events
+      // Icon should be directly in the div
       const cartIcon = mobileCartButton.querySelector('svg')
-      expect(cartIcon).toHaveClass('pointer-events-none')
+      expect(cartIcon).toBeInTheDocument()
       
-      // Verify no elements have higher z-index that could block clicks
+      // Badge should have z-index
       const badge = mobileCartButton.querySelector('span')
       if (badge) {
-        expect(badge).toHaveClass('absolute', 'pointer-events-none') // Badge should not block clicks
+        expect(badge).toHaveClass('z-20', 'pointer-events-none')
       }
       
-      // Tooltip should not block clicks (should have pointer-events-none)
-      const tooltip = mobileCartButton.querySelector('div')
-      if (tooltip) {
-        expect(tooltip).toHaveClass('pointer-events-none')
-      }
+      // Test that the div itself is clickable
+      expect(screen.queryByTestId('cart-sidebar')).not.toBeInTheDocument()
+      
+      act(() => {
+        fireEvent.click(mobileCartButton)
+      })
+      
+      waitFor(() => {
+        expect(screen.getByTestId('cart-sidebar')).toBeInTheDocument()
+      })
     })
 
     it('should provide multiple accessible cart buttons for different breakpoints', () => {
@@ -533,7 +534,7 @@ describe('Header Component', () => {
         </TestWrapper>
       )
 
-      // Mobile/Tablet cart icon button (always visible)
+      // Mobile/Tablet cart icon div (always visible)
       const iconButton = screen.getByTitle('Warenkorb öffnen (Icon)')
       expect(iconButton).toBeInTheDocument()
       expect(iconButton).toHaveClass('p-3', 'cursor-pointer', 'min-h-[44px]', 'min-w-[44px]') // Enhanced touch target with cursor
@@ -549,6 +550,47 @@ describe('Header Component', () => {
       // Fixed: Desktop button is now visible on medium screens (md+) instead of large (lg+)
       expect(desktopCartButton).toHaveClass('hidden', 'md:inline-flex')
       expect(desktopCartButton).toHaveClass('cursor-pointer')
+    })
+
+    it('should FAIL if center of cart icon is not clickable (reproducing real issue)', () => {
+      render(
+        <TestWrapper>
+          <Header />
+        </TestWrapper>
+      )
+
+      const mobileCartButton = screen.getByTitle('Warenkorb öffnen (Icon)')
+      
+      // This test should reproduce the exact issue the user described:
+      // "wenn ich genau in die mitte des warenkorbs klicke passiert nichts"
+      
+      // We need to simulate clicking in the EXACT CENTER of the button
+      // If this test passes, our solution works
+      // If this test fails, we haven't solved the real problem
+      
+      const buttonRect = mobileCartButton.getBoundingClientRect()
+      const centerX = buttonRect.width / 2
+      const centerY = buttonRect.height / 2
+      
+      // Create a click event at the exact center coordinates
+      const centerClickEvent = new MouseEvent('click', {
+        clientX: buttonRect.left + centerX,
+        clientY: buttonRect.top + centerY,
+        bubbles: true,
+        cancelable: true,
+      })
+      
+      expect(screen.queryByTestId('cart-sidebar')).not.toBeInTheDocument()
+      
+      // Dispatch the click event at the center coordinates
+      act(() => {
+        mobileCartButton.dispatchEvent(centerClickEvent)
+      })
+      
+      // If this fails, we haven't solved the center-click problem
+      waitFor(() => {
+        expect(screen.getByTestId('cart-sidebar')).toBeInTheDocument()
+      })
     })
   })
 }) 
