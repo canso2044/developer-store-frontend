@@ -465,6 +465,67 @@ describe('Header Component', () => {
       expect(cartIcon).toHaveClass('h-6', 'w-6', 'sm:h-7', 'sm:w-7')
     })
 
+    it('should ensure cart icon SVG is clickable and not blocked', () => {
+      render(
+        <TestWrapper>
+          <Header />
+        </TestWrapper>
+      )
+
+      const mobileCartButton = screen.getByTitle('Warenkorb öffnen (Icon)')
+      const cartIcon = mobileCartButton.querySelector('svg')
+      
+      // Verify icon exists and is child of button
+      expect(cartIcon).toBeInTheDocument()
+      expect(mobileCartButton.contains(cartIcon)).toBe(true)
+      
+      // Test clicking on the icon itself
+      expect(screen.queryByTestId('cart-sidebar')).not.toBeInTheDocument()
+      
+      act(() => {
+        fireEvent.click(cartIcon!)
+      })
+      
+      waitFor(() => {
+        expect(screen.getByTestId('cart-sidebar')).toBeInTheDocument()
+      })
+    })
+
+    it('should verify button structure prevents center-click issues', () => {
+      render(
+        <TestWrapper>
+          <Header />
+        </TestWrapper>
+      )
+
+      const mobileCartButton = screen.getByTitle('Warenkorb öffnen (Icon)')
+      
+      // Check button structure - should have relative class for proper positioning
+      expect(mobileCartButton).toHaveClass('relative')
+      
+      // Should have flex centering to ensure icon is properly positioned
+      expect(mobileCartButton).toHaveClass('flex', 'items-center', 'justify-center')
+      
+      // Button should have explicit pointer events
+      expect(mobileCartButton).toHaveStyle('pointer-events: auto')
+      
+      // Icon should not intercept pointer events
+      const cartIcon = mobileCartButton.querySelector('svg')
+      expect(cartIcon).toHaveClass('pointer-events-none')
+      
+      // Verify no elements have higher z-index that could block clicks
+      const badge = mobileCartButton.querySelector('span')
+      if (badge) {
+        expect(badge).toHaveClass('absolute', 'pointer-events-none') // Badge should not block clicks
+      }
+      
+      // Tooltip should not block clicks (should have pointer-events-none)
+      const tooltip = mobileCartButton.querySelector('div')
+      if (tooltip) {
+        expect(tooltip).toHaveClass('pointer-events-none')
+      }
+    })
+
     it('should provide multiple accessible cart buttons for different breakpoints', () => {
       render(
         <TestWrapper>

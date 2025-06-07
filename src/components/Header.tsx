@@ -83,12 +83,13 @@ export default function Header() {
                 title="Warenkorb öffnen (Icon)"
                 type="button"
                 aria-label="Warenkorb öffnen"
+                style={{ pointerEvents: 'auto' }}
               >
-                <ShoppingCartIcon className="h-6 w-6 sm:h-7 sm:w-7" />
+                <ShoppingCartIcon className="h-6 w-6 sm:h-7 sm:w-7 pointer-events-none" />
                 
                 {/* Cart Badge - Positioned relative to button center */}
                 {state.totalItems > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 bg-blue-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-pulse shadow-lg">
+                  <span className="absolute -top-0.5 -right-0.5 bg-blue-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-pulse shadow-lg pointer-events-none">
                     {state.totalItems > 99 ? '99+' : state.totalItems}
                   </span>
                 )}
