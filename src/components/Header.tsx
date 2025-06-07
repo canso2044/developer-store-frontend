@@ -150,16 +150,7 @@ export default function Header() {
 
 
 
-              {/* Full Cart Button - Medium+ Screens with Better Click Area */}
-              <button 
-                onClick={openCart}
-                className="hidden md:inline-flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors cursor-pointer min-h-[44px] min-w-[88px]"
-                title="Warenkorb öffnen (Desktop)"
-                type="button"
-                aria-label="Warenkorb öffnen (Desktop)"
-              >
-                Warenkorb
-              </button>
+
 
               {/* Fallback Cart Link for SEO */}
               <Link 
