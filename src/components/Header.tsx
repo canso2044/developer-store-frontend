@@ -76,20 +76,15 @@ export default function Header() {
 
             {/* Cart Controls - Mobile Optimized */}
             <div className="flex items-center space-x-2 sm:space-x-4">
-              {/* Mobile Quick Cart Button - DESKTOP HOVER FIX */}
+              {/* Cart Button - Beautiful & Functional */}
               <div
                 onClick={(e) => {
-                  console.log('🎯 PURE CSS Cart clicked!', e.target, e.currentTarget)
                   e.preventDefault()
                   e.stopPropagation()
                   openCart()
                 }}
-                onMouseDown={(e) => {
-                  console.log('🖱️ Mouse down on cart')
-                  e.preventDefault()
-                }}
-                className="relative p-3 text-gray-700 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center bg-green-100 border-2 border-green-500"
-                title="Warenkorb öffnen (Icon)"
+                className="relative p-3 text-gray-700 hover:text-blue-600 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors"
+                title="Warenkorb öffnen"
                 role="button"
                 tabIndex={0}
                 aria-label="Warenkorb öffnen"
@@ -105,10 +100,7 @@ export default function Header() {
                   }
                 }}
               >
-                {/* Pure CSS Cart Icon - NO SVG INTERFERENCE */}
-                <div className="w-6 h-6 bg-gray-700 rounded-sm flex items-center justify-center text-white text-xs font-bold">
-                  🛒
-                </div>
+                <ShoppingCartIcon className="h-6 w-6 sm:h-7 sm:w-7" style={{ pointerEvents: 'none' }} />
                 
                 {/* Cart Badge - Positioned relative to button center */}
                 {state.totalItems > 0 && (
@@ -117,12 +109,12 @@ export default function Header() {
                   </span>
                 )}
                 
-                {/* Hover Tooltip - DISABLED for debugging */}
-                {/* <div className="hidden sm:block absolute right-0 top-full mt-2 bg-gray-900 text-white text-sm py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                {/* Hover Tooltip - Safe for Desktop */}
+                <div className="hidden lg:block absolute right-0 top-full mt-2 bg-gray-900 text-white text-sm py-1 px-2 rounded opacity-0 hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
                   {state.totalItems === 0 ? 'Warenkorb ist leer' : 
                    state.totalItems === 1 ? '1 Artikel im Warenkorb' : 
                    `${state.totalItems} Artikel im Warenkorb`}
-                </div> */}
+                </div>
               </div>
 
               {/* Cart Total - Desktop */}
@@ -139,31 +131,7 @@ export default function Header() {
                 </div>
               )}
 
-              {/* DESKTOP ONLY: Guaranteed Working Button */}
-              <button
-                onClick={() => {
-                  console.log('🖥️ DESKTOP CART CLICKED')
-                  openCart()
-                }}
-                className="hidden md:block bg-blue-500 text-white px-3 py-2 rounded text-sm"
-                type="button"
-              >
-                🖥️ DESKTOP
-              </button>
 
-              {/* EMERGENCY: Simple Text Button + State Debug */}
-              <button
-                onClick={() => {
-                  console.log('🚨 EMERGENCY BUTTON CLICKED')
-                  console.log('openCart function:', openCart)
-                  console.log('isCartOpen state:', isCartOpen)
-                  setIsCartOpen(true)
-                }}
-                className="bg-red-500 text-white px-3 py-2 rounded text-sm"
-                type="button"
-              >
-                🚨 DEBUG
-              </button>
 
               {/* Full Cart Button - Medium+ Screens with Better Click Area */}
               <button 
