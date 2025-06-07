@@ -76,17 +76,28 @@ export default function Header() {
 
             {/* Cart Controls - Mobile Optimized */}
             <div className="flex items-center space-x-2 sm:space-x-4">
-              {/* Mobile Quick Cart Button - NO SVG VERSION */}
+              {/* Mobile Quick Cart Button - DESKTOP HOVER FIX */}
               <div
                 onClick={(e) => {
                   console.log('🎯 PURE CSS Cart clicked!', e.target, e.currentTarget)
+                  e.preventDefault()
+                  e.stopPropagation()
                   openCart()
                 }}
-                className="relative p-3 text-gray-700 hover:text-blue-600 transition-colors group cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center bg-green-100 border-2 border-green-500"
+                onMouseDown={(e) => {
+                  console.log('🖱️ Mouse down on cart')
+                  e.preventDefault()
+                }}
+                className="relative p-3 text-gray-700 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center bg-green-100 border-2 border-green-500"
                 title="Warenkorb öffnen (Icon)"
                 role="button"
                 tabIndex={0}
                 aria-label="Warenkorb öffnen"
+                style={{ 
+                  pointerEvents: 'auto',
+                  userSelect: 'none',
+                  touchAction: 'manipulation'
+                }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault()
@@ -106,12 +117,12 @@ export default function Header() {
                   </span>
                 )}
                 
-                {/* Hover Tooltip - Desktop only */}
-                <div className="hidden sm:block absolute right-0 top-full mt-2 bg-gray-900 text-white text-sm py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                {/* Hover Tooltip - DISABLED for debugging */}
+                {/* <div className="hidden sm:block absolute right-0 top-full mt-2 bg-gray-900 text-white text-sm py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
                   {state.totalItems === 0 ? 'Warenkorb ist leer' : 
                    state.totalItems === 1 ? '1 Artikel im Warenkorb' : 
                    `${state.totalItems} Artikel im Warenkorb`}
-                </div>
+                </div> */}
               </div>
 
               {/* Cart Total - Desktop */}
@@ -127,6 +138,18 @@ export default function Header() {
                   </button>
                 </div>
               )}
+
+              {/* DESKTOP ONLY: Guaranteed Working Button */}
+              <button
+                onClick={() => {
+                  console.log('🖥️ DESKTOP CART CLICKED')
+                  openCart()
+                }}
+                className="hidden md:block bg-blue-500 text-white px-3 py-2 rounded text-sm"
+                type="button"
+              >
+                🖥️ DESKTOP
+              </button>
 
               {/* EMERGENCY: Simple Text Button + State Debug */}
               <button
