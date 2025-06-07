@@ -76,19 +76,19 @@ export default function Header() {
 
             {/* Cart Controls - Mobile Optimized */}
             <div className="flex items-center space-x-2 sm:space-x-4">
-              {/* Mobile Quick Cart Button */}
+              {/* Mobile Quick Cart Button - Extended Click Area */}
               <button
                 onClick={openCart}
-                className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors group cursor-pointer"
+                className="relative p-3 text-gray-700 hover:text-blue-600 transition-colors group cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
                 title="Warenkorb öffnen (Icon)"
                 type="button"
                 aria-label="Warenkorb öffnen"
               >
                 <ShoppingCartIcon className="h-6 w-6 sm:h-7 sm:w-7" />
                 
-                {/* Cart Badge */}
+                {/* Cart Badge - Positioned relative to button center */}
                 {state.totalItems > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-pulse shadow-lg">
+                  <span className="absolute -top-0.5 -right-0.5 bg-blue-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-pulse shadow-lg">
                     {state.totalItems > 99 ? '99+' : state.totalItems}
                   </span>
                 )}

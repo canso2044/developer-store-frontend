@@ -418,6 +418,53 @@ describe('Header Component', () => {
       expect(desktopCartButton).toHaveAttribute('title', 'Warenkorb öffnen (Desktop)')
     })
 
+    it('should have adequate click area for mobile cart icon button', () => {
+      render(
+        <TestWrapper>
+          <Header />
+        </TestWrapper>
+      )
+
+      // Find the mobile cart icon button
+      const mobileCartButton = screen.getByTitle('Warenkorb öffnen (Icon)')
+      
+      // Check for adequate padding and minimum size (44x44px click area for accessibility)
+      expect(mobileCartButton).toHaveClass('p-3', 'min-h-[44px]', 'min-w-[44px]')
+      
+      // Should be flexbox centered to ensure icon is properly aligned
+      expect(mobileCartButton).toHaveClass('flex', 'items-center', 'justify-center')
+      
+      // Button should have pointer cursor
+      expect(mobileCartButton).toHaveClass('cursor-pointer')
+      
+      // Should have proper accessibility attributes
+      expect(mobileCartButton).toHaveAttribute('title', 'Warenkorb öffnen (Icon)')
+      expect(mobileCartButton).toHaveAttribute('aria-label', 'Warenkorb öffnen')
+      expect(mobileCartButton).toHaveAttribute('type', 'button')
+    })
+
+    it('should ensure cart icon click area covers entire icon', () => {
+      render(
+        <TestWrapper>
+          <Header />
+        </TestWrapper>
+      )
+
+      const mobileCartButton = screen.getByTitle('Warenkorb öffnen (Icon)')
+      
+      // Verify button dimensions are sufficient to cover icon (6x6 / 7x7) plus padding
+      expect(mobileCartButton).toHaveClass('p-3') // 12px padding all around
+      expect(mobileCartButton).toHaveClass('min-h-[44px]', 'min-w-[44px]') // Minimum touch target
+      
+      // Button should be positioned relatively for badge positioning
+      expect(mobileCartButton).toHaveClass('relative')
+      
+      // Icon should be contained within the button
+      const cartIcon = mobileCartButton.querySelector('svg')
+      expect(cartIcon).toBeInTheDocument()
+      expect(cartIcon).toHaveClass('h-6', 'w-6', 'sm:h-7', 'sm:w-7')
+    })
+
     it('should provide multiple accessible cart buttons for different breakpoints', () => {
       render(
         <TestWrapper>
@@ -428,7 +475,7 @@ describe('Header Component', () => {
       // Mobile/Tablet cart icon button (always visible)
       const iconButton = screen.getByTitle('Warenkorb öffnen (Icon)')
       expect(iconButton).toBeInTheDocument()
-      expect(iconButton).toHaveClass('p-2', 'cursor-pointer') // Good touch target with cursor
+      expect(iconButton).toHaveClass('p-3', 'cursor-pointer', 'min-h-[44px]', 'min-w-[44px]') // Enhanced touch target with cursor
 
       // Desktop text button (now visible on medium+ screens instead of large only)
       const desktopCartButton = screen.getByTitle('Warenkorb öffnen (Desktop)')
