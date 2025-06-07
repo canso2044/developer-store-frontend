@@ -76,20 +76,15 @@ export default function Header() {
 
             {/* Cart Controls - Mobile Optimized */}
             <div className="flex items-center space-x-2 sm:space-x-4">
-              {/* Cart Button - Beautiful & Functional */}
+              {/* Cart Button - BULLETPROOF OVERLAY SOLUTION */}
               <div
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  openCart()
-                }}
                 className="relative p-3 text-gray-700 hover:text-blue-600 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors"
                 title="Warenkorb öffnen"
                 role="button"
                 tabIndex={0}
                 aria-label="Warenkorb öffnen"
                 style={{ 
-                  pointerEvents: 'auto',
+                  pointerEvents: 'none', // Container selbst blockiert nicht
                   userSelect: 'none',
                   touchAction: 'manipulation'
                 }}
@@ -100,11 +95,33 @@ export default function Header() {
                   }
                 }}
               >
-                <ShoppingCartIcon className="h-6 w-6 sm:h-7 sm:w-7" style={{ pointerEvents: 'none' }} />
+                {/* INVISIBLE FULL-COVERAGE CLICK OVERLAY - NUR DIESER IST KLICKBAR */}
+                <div 
+                  className="absolute inset-0 w-full h-full cursor-pointer z-50"
+                  onClick={(e) => {
+                    console.log('🎯 OVERLAY CLICKED!')
+                    e.preventDefault()
+                    e.stopPropagation()
+                    openCart()
+                  }}
+                  style={{
+                    background: process.env.NODE_ENV === 'development' ? 'rgba(0,255,0,0.2)' : 'transparent',
+                    pointerEvents: 'auto' // NUR der Overlay ist klickbar
+                  }}
+                  title="Click Overlay - NUR DIESER BEREICH IST KLICKBAR"
+                />
                 
-                {/* Cart Badge - Positioned relative to button center */}
+                <ShoppingCartIcon 
+                  className="h-6 w-6 sm:h-7 sm:w-7 relative z-10" 
+                  style={{ pointerEvents: 'none' }} // Icon blockiert KEINE Klicks
+                />
+                
+                {/* Cart Badge - NICHT KLICKBAR, blockiert keine Events */}
                 {state.totalItems > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 bg-blue-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-pulse shadow-lg pointer-events-none z-20">
+                  <span 
+                    className="absolute -top-0.5 -right-0.5 bg-blue-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-pulse shadow-lg z-[60]"
+                    style={{ pointerEvents: 'none' }} // Badge blockiert KEINE Klicks
+                  >
                     {state.totalItems > 99 ? '99+' : state.totalItems}
                   </span>
                 )}
