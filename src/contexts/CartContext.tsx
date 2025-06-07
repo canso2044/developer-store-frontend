@@ -134,16 +134,31 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   // LocalStorage Key
   const CART_STORAGE_KEY = 'medusa-cart'
 
-  // Load from localStorage on mount
+  // Load from localStorage on mount with robust error handling
   useEffect(() => {
     try {
       const savedCart = localStorage.getItem(CART_STORAGE_KEY)
-      if (savedCart) {
+      if (savedCart && savedCart.trim()) {
+        // Validate JSON before parsing
         const parsedCart: CartItem[] = JSON.parse(savedCart)
-        dispatch({ type: 'LOAD_CART', payload: parsedCart })
+        
+        // Validate that it's actually an array of CartItems
+        if (Array.isArray(parsedCart)) {
+          dispatch({ type: 'LOAD_CART', payload: parsedCart })
+        } else {
+          console.warn('Invalid cart data format in localStorage, clearing...')
+          localStorage.removeItem(CART_STORAGE_KEY)
+        }
       }
     } catch (error) {
       console.error('Error loading cart from localStorage:', error)
+      // Clear corrupted localStorage data
+      try {
+        localStorage.removeItem(CART_STORAGE_KEY)
+        console.info('Cleared corrupted cart data from localStorage')
+      } catch (clearError) {
+        console.error('Error clearing localStorage:', clearError)
+      }
     }
   }, [])
 

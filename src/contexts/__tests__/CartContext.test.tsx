@@ -228,11 +228,92 @@ describe('CartContext', () => {
       const mockGetItem = localStorage.getItem as jest.MockedFunction<typeof localStorage.getItem>
       mockGetItem.mockReturnValue('invalid-json')
 
+      // Suppress expected console.error for this test
+      const originalError = console.error
+      console.error = jest.fn()
+
       const { result } = renderHook(() => useCart(), { wrapper })
 
       // Should fall back to empty cart
       expect(result.current.state.items).toEqual([])
       expect(result.current.state.totalItems).toBe(0)
+      
+      // Should have logged error and cleared localStorage
+      expect(console.error).toHaveBeenCalledWith(
+        'Error loading cart from localStorage:',
+        expect.any(SyntaxError)
+      )
+      expect(localStorage.removeItem).toHaveBeenCalledWith('medusa-cart')
+
+      // Restore console.error
+      console.error = originalError
+    })
+
+    it('should handle empty string localStorage data', () => {
+      const mockGetItem = localStorage.getItem as jest.MockedFunction<typeof localStorage.getItem>
+      mockGetItem.mockReturnValue('')
+
+      const { result } = renderHook(() => useCart(), { wrapper })
+
+      // Should not attempt to parse empty string
+      expect(result.current.state.items).toEqual([])
+      expect(result.current.state.totalItems).toBe(0)
+    })
+
+    it('should handle invalid cart data format in localStorage', () => {
+      const mockGetItem = localStorage.getItem as jest.MockedFunction<typeof localStorage.getItem>
+      mockGetItem.mockReturnValue('{"not": "an array"}')
+
+      // Suppress expected console.warn for this test
+      const originalWarn = console.warn
+      console.warn = jest.fn()
+
+      const { result } = renderHook(() => useCart(), { wrapper })
+
+      // Should fall back to empty cart
+      expect(result.current.state.items).toEqual([])
+      expect(result.current.state.totalItems).toBe(0)
+      
+      // Should have logged warning and cleared localStorage
+      expect(console.warn).toHaveBeenCalledWith(
+        'Invalid cart data format in localStorage, clearing...'
+      )
+      expect(localStorage.removeItem).toHaveBeenCalledWith('medusa-cart')
+
+      // Restore console.warn
+      console.warn = originalWarn
+    })
+
+    it('should handle localStorage quota exceeded gracefully', () => {
+      const { result } = renderHook(() => useCart(), { wrapper })
+      
+      // Mock localStorage.setItem to throw quota exceeded error
+      const mockSetItem = localStorage.setItem as jest.MockedFunction<typeof localStorage.setItem>
+      mockSetItem.mockImplementation(() => {
+        throw new Error('QuotaExceededError')
+      })
+
+      // Suppress expected console.error for this test
+      const originalError = console.error
+      console.error = jest.fn()
+
+      act(() => {
+        result.current.addItem(mockCartItem)
+      })
+
+      // Cart should still work in memory
+      expect(result.current.state.items).toHaveLength(1)
+      expect(result.current.state.totalItems).toBe(2)
+      
+      // Should have logged error
+      expect(console.error).toHaveBeenCalledWith(
+        'Error saving cart to localStorage:',
+        expect.any(Error)
+      )
+
+      // Restore mocks
+      console.error = originalError
+      mockSetItem.mockRestore()
     })
   })
 }) 
