@@ -76,17 +76,13 @@ export default function Header() {
 
             {/* Cart Controls - Mobile Optimized */}
             <div className="flex items-center space-x-2 sm:space-x-4">
-              {/* Mobile Quick Cart Button - DEBUG MODE */}
+              {/* Mobile Quick Cart Button - NO SVG VERSION */}
               <div
                 onClick={(e) => {
-                  console.log('🎯 Cart clicked!', e.target, e.currentTarget)
-                  console.log('Click coordinates:', e.clientX, e.clientY)
+                  console.log('🎯 PURE CSS Cart clicked!', e.target, e.currentTarget)
                   openCart()
                 }}
-                onMouseDown={(e) => {
-                  console.log('🖱️ Mouse down on cart', e.target)
-                }}
-                className="relative p-3 text-gray-700 hover:text-blue-600 transition-colors group cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center bg-red-100 border-2 border-red-500"
+                className="relative p-3 text-gray-700 hover:text-blue-600 transition-colors group cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center bg-green-100 border-2 border-green-500"
                 title="Warenkorb öffnen (Icon)"
                 role="button"
                 tabIndex={0}
@@ -98,14 +94,10 @@ export default function Header() {
                   }
                 }}
               >
-                <ShoppingCartIcon 
-                  className="h-6 w-6 sm:h-7 sm:w-7 bg-blue-200 border border-blue-400" 
-                  onClick={(e) => {
-                    console.log('🛒 SVG Icon clicked directly!', e)
-                    e.stopPropagation()
-                    openCart()
-                  }}
-                />
+                {/* Pure CSS Cart Icon - NO SVG INTERFERENCE */}
+                <div className="w-6 h-6 bg-gray-700 rounded-sm flex items-center justify-center text-white text-xs font-bold">
+                  🛒
+                </div>
                 
                 {/* Cart Badge - Positioned relative to button center */}
                 {state.totalItems > 0 && (
@@ -136,13 +128,18 @@ export default function Header() {
                 </div>
               )}
 
-              {/* EMERGENCY: Simple Text Button */}
+              {/* EMERGENCY: Simple Text Button + State Debug */}
               <button
-                onClick={openCart}
-                className="bg-green-500 text-white px-3 py-2 rounded text-sm"
+                onClick={() => {
+                  console.log('🚨 EMERGENCY BUTTON CLICKED')
+                  console.log('openCart function:', openCart)
+                  console.log('isCartOpen state:', isCartOpen)
+                  setIsCartOpen(true)
+                }}
+                className="bg-red-500 text-white px-3 py-2 rounded text-sm"
                 type="button"
               >
-                🛒 CART
+                🚨 DEBUG
               </button>
 
               {/* Full Cart Button - Medium+ Screens with Better Click Area */}
