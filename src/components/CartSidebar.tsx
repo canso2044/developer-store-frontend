@@ -76,26 +76,41 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                 leaveTo="translate-x-full"
               >
                 <Dialog.Panel className="pointer-events-auto w-screen max-w-md">
-                  <div className="flex h-full flex-col overflow-y-scroll bg-white shadow-xl">
-                    {/* Header */}
-                    <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
-                      <div className="flex items-start justify-between">
-                        <Dialog.Title className="text-lg font-medium text-gray-900">
-                          Warenkorb
-                        </Dialog.Title>
-                        <div className="ml-3 flex h-7 items-center">
-                          <button
-                            type="button"
-                            className="relative -m-2 p-2 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                            onClick={handleClose}
-                            aria-label="Warenkorb schließen"
-                          >
-                            <span className="absolute -inset-0.5" />
-                            <span className="sr-only">Warenkorb schließen</span>
-                            <XMarkIcon className="h-6 w-6" aria-hidden="true" />
-                          </button>
+                  <div className="flex h-full flex-col overflow-y-scroll bg-gradient-to-b from-white to-gray-50 shadow-2xl">
+                    {/* Beautiful Header with Gradient */}
+                    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-8 text-white">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                            <ShoppingCartIcon className="h-5 w-5" />
+                          </div>
+                          <Dialog.Title className="text-xl font-bold">
+                            Warenkorb
+                          </Dialog.Title>
                         </div>
+                        <button
+                          type="button"
+                          className="relative -m-2 p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/50"
+                          onClick={handleClose}
+                          aria-label="Warenkorb schließen"
+                        >
+                          <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+                        </button>
                       </div>
+                      
+                      {/* Cart Stats */}
+                      <div className="mt-4 flex items-center justify-between text-blue-100">
+                        <span className="text-sm">
+                          {state.totalItems} {state.totalItems === 1 ? 'Artikel' : 'Artikel'}
+                        </span>
+                        <span className="text-sm font-medium">
+                          €{formatPrice(state.totalPrice)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Main Content */}
+                    <div className="flex-1 overflow-y-auto px-6 py-6">
 
                       {/* Cart Items */}
                       <div className="mt-8">
